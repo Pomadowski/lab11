@@ -1,0 +1,70 @@
+#include <iostream>
+ #include <thread>
+ #include <mutex>
+ #include <ctime>
+ #include <windows.h>
+ std::mutex mtx;
+ int current_temp;
+ int current_pres;
+ bool update_pending = false;
+
+void temp_sensor(std::string name){
+	mtx.lock();
+		std::cout<< name << "\n" <<std::this_thread::get_id() << "\n" << std::endl;
+	mtx.unlock();
+	while(true){
+		
+		if (time(NULL) % 10 == 0){
+			Sleep(1020);
+			mtx.lock();
+			current_temp=30+rand()%10;
+			update_pending = true;
+			std::cout<<"temp sensor sent: "<<current_temp << std::endl;
+			mtx.unlock();
+		}
+		
+	}
+	
+	
+}
+void pres_sensor(std::string name){
+	mtx.lock();
+	std::cout<< name << "\n" << std::this_thread::get_id() << "\n" << std::endl;
+	mtx.unlock();
+	while(true){
+		
+		if (time(NULL) % 10 == 5){
+			Sleep(1020);
+			mtx.lock();
+			current_pres=100+rand()%50;
+			update_pending = true;
+			std::cout<<"pres sensor sent: "<<current_pres << std::endl;
+			mtx.unlock();
+		}
+	
+		
+}
+	
+}
+void display(){
+	while(true){
+	if(update_pending){
+		mtx.lock();
+		std::cout<<"temp received:" << current_temp << std::endl;
+		std::cout<<"pres received:" << current_pres << std::endl;
+		update_pending=false;
+		mtx.unlock();
+	}
+}
+	
+}
+
+int main(){
+	std::thread temp(temp_sensor, "TMP");
+	std::thread pres(pres_sensor, "PRS");
+	std::thread disp(display);
+	temp.join();
+	pres.join();
+	disp.join();
+	return 0;
+}
