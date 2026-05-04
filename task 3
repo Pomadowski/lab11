@@ -1,0 +1,66 @@
+=================== no mutex =========================
+
+
+#include <iostream>
+#include <thread>
+
+using namespace std;
+
+int number = 0;
+
+void increment(){
+    
+    for(int i=0; i<50000; i++){
+        number++;
+    }
+}
+
+int main()
+{
+    thread t1(increment);
+    thread t2(increment);
+    t1.join();
+    t2.join();
+    
+    cout << "executions: " << number;
+    
+    return 0;
+}
+
+
+
+================= with mutex =======================
+
+
+#include <iostream>
+#include <thread>
+
+using namespace std;
+
+#include <mutex>
+
+mutex mtx;
+
+int number = 0;
+
+void increment(){
+    
+    mtx.lock();
+    
+    for(int i=0; i<50000; i++){
+        number++;
+    }
+    
+    mtx.unlock();
+}
+
+int main()
+{
+    thread t1(increment);
+    thread t2(increment);
+    t1.join();
+    t2.join();
+    std::cout<<"executions: "<<number;
+    
+    return 0;
+}
